@@ -14,7 +14,7 @@
 1. **Clone the Repository**  
    Clone the repository to your local machine using the following command:
    ```bash
-   git clone https://github.com/Mohamed-Mohamed-Ibrahim/Socket-Programming
+   git clone https://github.com/Mohamed-Mohamed-Ibrahim/socket_programming
    ```
 
 2. **Navigate to the Project Directory**  
@@ -50,6 +50,19 @@
     ```bash
     python my_client.py 127.0.0.1 8000
     ```
+
+# Bouns Part
+
+1. Test your server with a real web browser
+   - 404 Not Found
+      ![alt text](./readme/2.png)
+   - 200 OK
+      ![alt text](./readme/1.png)
+   - trying html
+      ![alt text](./readme/4.png)
+      ![alt text](./readme/5.png)
+2. Performance Evaluation
+![code is found at evaluate_perf.py](./readme/3.png)
    
 
 # Client Code Explained
