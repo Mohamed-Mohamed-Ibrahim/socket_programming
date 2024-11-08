@@ -1,0 +1,4 @@
+client_post ok.txt 127.0.0.1 
+client_get ok.txt 127.0.0.1 
+client_post mpv-shot0001.jpg 127.0.0.1 
+client_get mpv-shot0001.jpg 127.0.0.1 
