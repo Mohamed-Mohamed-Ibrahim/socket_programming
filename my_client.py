@@ -1,5 +1,5 @@
 import socket, argparse
-from utils import *  # Assuming this contains helper functions like `get_content_type`
+from utils import *  # contains helper functions like `get_content_type`
 
 # Prepare a GET HTTP request message
 def prepare_get_message(file_path: str, 
@@ -29,98 +29,117 @@ def parse_command(command):
 # Main client function for sending HTTP requests
 def client(server_ip="127.0.0.1", port_no=8000):
 
-    # Prompt for input file path containing commands
-    # commands = input("Enter the commands file path:")
-    commands = "input.txt"
-    # Create a socket object using IPv4 and TCP
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        # Create a socket object using IPv4 and TCP
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Connect to the server using the specified IP and port
+        client.connect((server_ip, port_no))
+        print(f"Connected to server at {server_ip}:{port_no}")
 
-    # Connect to the server using the specified IP and port
-    client.connect((server_ip, port_no))
-    print(f"Connected to server at {server_ip}:{port_no}")
-
-    # Read commands from the specified file
-    with open(commands, "r") as file:
-        commands = file.readlines()
-    
-    # Process each command in the file
-    for command in commands:
-        # Parse command for operation type, file path, host name, and port number
-        operation, file_path, host_name, port_number = parse_command(command.strip())
+        # Prompt for input file path containing commands
+        # commands = input("Enter the commands file path:")
+        commands = "input.txt"
         
-        # Determine the content type and set file path for request
-        file_type = get_content_type(file_path)
-        file_path = os.getcwd() + "/client/" + os.path.basename(file_path)
 
-        msg = ""
-        # If the operation is a GET request
-        if operation == "client_get":
-            msg = prepare_get_message(file_path, host_name, port_number)
-            client.sendall(msg.encode("utf-8"))  # Send GET request to server
+        # Read commands from the specified file
+        with open(commands, "r") as file:
+            commands = file.readlines()
+        
+        # Process each command in the file
+        for command in commands:
+            # Parse command for operation type, file path, host name, and port number
+            operation, file_path, host_name, port_number = parse_command(command.strip())
 
-        # If the operation is a POST request
-        elif operation == "client_post":
-            data = ""
-            with open(file_path, "rb") as file:
-                data = file.read()  # Read file data to post
-            # Prepare the POST request headers and append file data
-            msg = prepare_post_message( file_path=file_path.replace(" ", "\ "), 
-                                        server_address=host_name,
-                                        data_len=len(data), 
-                                        server_port=port_number,
-                                        content_type=get_content_type(file_path),
-                                        ).encode("utf-8")
-            msg += data  # Append data to message
-            client.sendall(msg)  # Send POST request to server
+            # Determine the content type and set file path for request
+            file_type = get_content_type(file_path)
+            file_path = os.getcwd() + "/client/" + os.path.basename(file_path)
 
-        # Initialize buffer for receiving server response
-        request = b""
-        while True:
-            chunk = client.recv(4096)  # Read data in 4KB chunks
-            if b"HTTP" not in chunk:
+            if operation not in ["client_get", "client_post"]:
+                print(f"Invalid operation: {operation}\n\n")
+                continue    
+
+            if operation == "client_post" and not os.path.exists(file_path):
+                print(f"File not found: {file_path}\n\n")
                 continue
-            request += chunk  # Accumulate chunks in request
-            if b"\r\n\r\n" in request:  # End of headers detected
-                break
-        
-        # Find end of headers in the response
-        headers_end_b = request.find(b"\r\n\r\n")
+            
+            server_ip = host_name
+            port_no = port_number
 
-        # Decode headers and separate content from headers
-        msg = request[:headers_end_b+4].decode('utf-8')
-        data = request[headers_end_b+4:]
+            msg = ""
+            # If the operation is a GET request
+            if operation == "client_get":
+                msg = prepare_get_message(file_path, host_name, port_number)
+                client.sendall(msg.encode("utf-8"))  # Send GET request to server
 
-        request_lines = msg.split("\r\n")
-        content_length = 0
+            # If the operation is a POST request
+            elif operation == "client_post":
+                data = ""
+                with open(file_path, "rb") as file:
+                    data = file.read()  # Read file data to post
+                # Prepare the POST request headers and append file data
+                msg = prepare_post_message( file_path=file_path, 
+                                            server_address=host_name,
+                                            data_len=len(data), 
+                                            server_port=port_number,
+                                            content_type=get_content_type(file_path),
+                                            ).encode("utf-8")
+                msg += data  # Append data to message
+                client.sendall(msg)  # Send POST request to server
 
-        # Extract Content-Length if present
-        if "Content-Length" in msg:
-            for line in request_lines:
-                if line.lower().startswith("content-length:"):
-                    content_length = int(line[15:].strip())
+            # Initialize buffer for receiving server response
+            request = b""
+            while True:
+                chunk = client.recv(4096)  # Read data in 4KB chunks
+                if b"HTTP" not in chunk:
+                    continue
+                request += chunk  # Accumulate chunks in request
+                if b"\r\n\r\n" in request:  # End of headers detected
                     break
-            bytes_remaining = content_length - len(data)
-            # Retrieve remaining bytes until content length is satisfied
-            while bytes_remaining > 0:
-                chunk = client.recv(4096)
-                data += chunk
-                bytes_remaining -= len(chunk)
+            
+            # Find end of headers in the response
+            headers_end_b = request.find(b"\r\n\r\n")
 
-            arg = 'w'  # Default write mode
-            if "image" in file_type:
-                content = data
-                arg = 'wb'  # Write binary if image
-            else:
-                content = data.decode("utf-8")  # Decode text content
+            # Decode headers and separate content from headers
+            msg = request[:headers_end_b+4].decode('utf-8')
+            data = request[headers_end_b+4:]
 
-            # Save content to file in the client directory
-            path = os.getcwd() + "/client/" + os.path.basename(file_path)
-            with open(path, arg) as f:
-                f.write(content)
+            print(msg)
+            if "404 Not Found" in msg:
+                continue
 
-    # Close the client socket connection to the server
-    client.close()
-    print("Connection to server closed")
+            request_lines = msg.split("\r\n")
+            content_length = 0
+
+            # Extract Content-Length if present
+            if "Content-Length" in msg:
+                for line in request_lines:
+                    if line.lower().startswith("content-length:"):
+                        content_length = int(line[15:].strip())
+                        break
+                bytes_remaining = content_length - len(data)
+                # Retrieve remaining bytes until content length is satisfied
+                while bytes_remaining > 0:
+                    chunk = client.recv(4096)
+                    data += chunk
+                    bytes_remaining -= len(chunk)
+
+                arg = 'w'  # Default write mode
+                if "image" in file_type:
+                    content = data
+                    arg = 'wb'  # Write binary if image
+                else:
+                    content = data.decode("utf-8")  # Decode text content
+
+                # Save content to file in the client directory
+                path = os.getcwd() + "/client/" + os.path.basename(file_path)
+                with open(path, arg) as f:
+                    f.write(content)
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        # Close the client socket connection to the server
+        client.close()
+        print("Connection to server closed")
 
 if __name__ == "__main__":
     # Set up command-line arguments for server IP and port

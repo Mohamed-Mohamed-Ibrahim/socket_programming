@@ -1,3 +1,10 @@
+# Students Info
+
+| Student No | Name | ID |
+|----------|----------|----------|
+|   1  |   يوسف محمد محمد طمان   |   21011621   |
+|   2  |   محمد محمد ابراهيم علي حسن   |   21011211   |
+
 
 # Descirption
 
@@ -20,7 +27,7 @@
 2. **Navigate to the Project Directory**  
    Change your directory to the project folder:
    ```bash
-   cd Socket-Programming
+   cd socket_programming
    ```
 
 3. **Install Required Dependencies**  
@@ -74,7 +81,7 @@ This Python code implements a simple HTTP client that reads commands from a file
 ### Imports and Utilities:
 - **`socket`**: Used for network communication to establish a connection with the server.
 - **`argparse`**: Handles command-line argument parsing to accept `server_ip` and `port_number`.
-- **`utils`**: A custom module that is imported, but its exact content is not shown in the provided code. It likely contains helper functions such as `get_content_type`.
+- **`utils`**: A custom module contains helper functions such as `get_content_type`.
 
 ### Core Functions
 
@@ -125,9 +132,7 @@ In the `__main__` block:
 - The `client()` function is then called with the parsed `server_ip` and `port_number` as parameters.
 
 
-# Server Code Explained
-
-# Multi-threaded HTTP Server
+# Multi-threaded HTTP Server Code Explained
 
 This code implements a multi-threaded HTTP server that handles `GET` and `POST` requests, with dynamic timeout adjustment based on server load.
 

@@ -61,6 +61,7 @@ def handle_client(client_socket, addr):
 
             # Parse request line and retrieve the HTTP method, path, and version
             command, path, version = request_lines[0].split(" ")
+
             msg = ""
             # Set the path for the requested resource in the server directory
             path = os.getcwd() + "/server/" + os.path.basename(path)
@@ -68,6 +69,12 @@ def handle_client(client_socket, addr):
 
             # Handle GET request
             if command == "GET":
+
+                if not os.path.exists(path):
+                    # Prepare and send a 404 Not Found response
+                    msg = prepare_get_response_not_found()
+                    client_socket.sendall(msg.encode("utf-8"))
+                    continue
                 # Open and read the requested file
                 with open(path, "rb") as file:
                     data = file.read()
@@ -98,6 +105,7 @@ def handle_client(client_socket, addr):
         client_socket.send(msg.encode("utf-8"))
     finally:
         # Close the connection to the client
+        client_socket.shutdown(socket.SHUT_RDWR)
         client_socket.close()
         print(f"Connection to client ({addr[0]}:{addr[1]}) closed")
 
