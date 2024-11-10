@@ -1,5 +1,1 @@
-client_get text.txt 127.0.1.1 1200
-client_get text12.txt 127.0.0.1 
-client_post text.txt 127.0.0.1 
-client_post text12.txt 127.0.0.1 
-client_get text12.txt 127.0.0.1 
+client_get texasdat.txt 127.0.1.1

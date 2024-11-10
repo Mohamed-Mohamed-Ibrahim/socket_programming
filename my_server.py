@@ -1,5 +1,5 @@
 import socket, threading, argparse
-from utils import *  # Assuming this includes helper functions like `get_content_type`
+from utils import *  # includes helper functions like `get_content_type`
 from concurrent.futures import ThreadPoolExecutor
 
 # Maximum number of threads in the thread pool
@@ -20,7 +20,7 @@ def prepare_get_response_found(data_len: int, content_type: str = "text/plain", 
 
 # Prepare a 404 Not Found HTTP response when requested resource is missing
 def prepare_get_response_not_found() -> str:
-    return f"HTTP/1.1 404 Not Found\r\n\r\n"
+    return f"\r\n\r\nHTTP/1.1 404 Not Found\r\n\r\n"
 
 # Prepare a 200 OK HTTP response for a successful POST request
 def prepare_post_response() -> str:
@@ -51,7 +51,7 @@ def handle_client(client_socket, addr):
                 for line in request_lines:
                     if line.lower().startswith("content-length:"):
                         content_length = int(line[15:].strip())
-                        break
+                        continue
                 # Continue receiving data until entire content is read
                 bytes_remaining = content_length - len(data)
                 while bytes_remaining > 0:
@@ -69,7 +69,6 @@ def handle_client(client_socket, addr):
 
             # Handle GET request
             if command == "GET":
-
                 if not os.path.exists(path):
                     # Prepare and send a 404 Not Found response
                     msg = prepare_get_response_not_found()

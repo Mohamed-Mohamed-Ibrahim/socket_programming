@@ -58,6 +58,11 @@
     python my_client.py 127.0.0.1 8000
     ```
 
+# Results
+![alt text](./readme/6.jpeg)
+![alt text](./readme/7.jpeg)
+
+
 # Bouns Part
 
 1. Test your server with a real web browser
